@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI Beauty Fix — Fotóretusálás</title>
+  <style>
+    :root{--accent:#7c3aed;--bg:#0f1724;--card:#0b1220;--muted:#94a3b8}
+    body{font-family:Inter,system-ui,Arial;background:linear-gradient(180deg,#071122 0%,#081224 100%);color:#e6eef8;margin:0}
+    .container{max-width:980px;margin:28px auto;padding:18px}
+    header{display:flex;align-items:center;gap:12px}
+    header img{width:56px;height:56px;border-radius:8px}
+    h1{margin:0;font-size:20px}
+    p.lead{color:var(--muted)}
+    .grid{display:grid;grid-template-columns:1fr 340px;gap:16px;margin-top:18px}
+    .card{background:rgba(255,255,255,0.03);padding:16px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,0.5)}
+    .small{font-size:13px;color:var(--muted)}
+    .btn{display:inline-block;padding:10px 14px;border-radius:10px;background:var(--accent);color:white;text-decoration:none;font-weight:600}
+    .mutebtn{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    label{display:block;margin:8px 0;font-weight:600}
+    input[type=file]{display:block}
+    #preview{max-width:100%;border-radius:8px;margin-top:8px}
+    .payoptions button{margin:6px 6px 6px 0}
+    .hidden{display:none}
+    footer{margin-top:20px;color:var(--muted);font-size:13px}
+    nav a{color:var(--muted);margin-right:12px;text-decoration:none}
+    .watermark{position:absolute;left:10px;bottom:10px;padding:4px 8px;background:rgba(0,0,0,0.3);border-radius:6px;font-weight:700}
+    .admin-area{display:flex;flex-direction:column;gap:8px}
+    code{background:#071324;padding:4px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img src="" alt="logo" id="logo" style="display:none">
+      <div>
+        <h1>🔥 AI Beauty Fix</h1>
+        <p class="lead">Gyors AI fotó-retusálás — feltöltés, fizetés, letöltés. Ingyenes 3 kép vízjellel / nap.</p>
+      </div>
+      <nav style="margin-left:auto">
+        <a href="#home" onclick="showView('home')">Főoldal</a>
+        <a href="#upload" onclick="showView('upload')">Feltöltés</a>
+        <a href="#pricing" onclick="showView('pricing')">Árak</a>
+        <a href="#admin" onclick="showView('admin')">Admin</a>
+      </nav>
+    </header>
+
+    <div id="views">
+      <div id="home" class="view">
+        <div class="grid">
+          <div class="card">
+            <h2>Hogyan működik</h2>
+            <ol>
+              <li>Feltöltöd a fotót (JPG/PNG).</li>
+              <li>Választasz: ingyenes retus (vízjel, 3 kép/nap) vagy vásárolsz kreditet/előfizetést.</li>
+              <li>Fizetés után kapod vízjel nélküli, nagyobb felbontású képet.</li>
+            </ol>
+            <p class="small">Ez egy GitHub Pages kompatibilis demo — a valódi AI feldolgozás később szerverről hívható meg.</p>
+            <a class="btn" href="#upload" onclick="showView('upload')">Feltöltés most</a>
+          </div>
+
+          <aside class="card">
+            <h3>Gyors kezdés</h3>
+            <p class="small">Ingyenes: 3 kép / nap, vízjellel. Kreditcsomagok és havi előfizetések a jobb oldalon.</p>
+            <div style="margin-top:10px">
+              <strong>Kreditek: </strong><span id="creditDisplay">0</span>
+            </div>
+            <div style="margin-top:12px">
+              <a class="mutebtn btn" onclick="showView('pricing')">Vásárlás / előfizetés</a>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <div id="upload" class="view hidden">
+        <div class="card">
+          <h2>Feltöltés és Retusálás</h2>
+          <p class="small">Maximum 20 MB / kép. Ingyenes fiók: <strong>3 ingyenes retus / nap</strong> (vízjellel).</p>
+
+          <label>Válassz képet</label>
+          <input id="fileInput" type="file" accept="image/*">
+          <canvas id="canvas" class="hidden"></canvas>
+          <img id="preview" src="#" alt="preview" class="hidden">
+
+          <div style="margin-top:10px">
+            <label>Válassz opciót</label>
+            <select id="optionSelect">
+              <option value="free">Ingyenes retus (vízjel) — limit 3/nap</option>
+              <option value="credit">Használj kreditet (vízjel nélküli)</option>
+              <option value="paynow">Fizess egy képet (egyedi ár)</option>
+            </select>
+          </div>
+
+          <div style="margin-top:12px">
+            <button class="btn" id="processBtn">Retusálás indítása</button>
+            <span id="status" class="small"></span>
+          </div>
+
+          <div id="resultWrap" class="hidden" style="margin-top:12px">
+            <h3>Eredmény</h3>
+            <div style="position:relative;display:inline-block">
+              <img id="resultImg" src="#" alt="result" style="max-width:100%;border-radius:8px">
+              <div id="wmTag" class="watermark hidden">AI Beauty Fix</div>
+            </div>
+            <div style="margin-top:8px">
+              <a id="downloadBtn" class="btn" download>Letöltés</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="pricing" class="view hidden">
+        <div class="grid">
+          <div class="card">
+            <h2>Árak és csomagok</h2>
+            <p class="small">Kredit alapú rendszer: 1 retus = 1 kredit.</p>
+
+            <h3>Kredit csomagok</h3>
+            <div class="payoptions">
+              <form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post" style="display:inline-block;margin-right:8px">
+                <input type="hidden" name="cmd" value="_xclick">
+                <input type="hidden" name="business" value="atika.76@windowslive.com">
+                <input type="hidden" name="item_name" value="10 retus kredit">
+                <input type="hidden" name="amount" value="1490">
+                <input type="hidden" name="currency_code" value="HUF">
+                <input type="hidden" name="return" value="">
+                <input type="hidden" name="cancel_return" value="">
+                <input type="submit" class="btn" value="10 retus — 1490 Ft">
+              </form>
+
+              <form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post" style="display:inline-block;margin-right:8px">
+                <input type="hidden" name="cmd" value="_xclick">
+                <input type="hidden" name="business" value="atika.76@windowslive.com">
+                <input type="hidden" name="item_name" value="20 retus kredit">
+                <input type="hidden" name="amount" value="2490">
+                <input type="hidden" name="currency_code" value="HUF">
+                <input type="hidden" name="return" value="">
+                <input type="hidden" name="cancel_return" value="">
+                <input type="submit" class="btn" value="20 retus — 2490 Ft">
+              </form>
+
+              <form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post" style="display:inline-block;margin-right:8px">
+                <input type="hidden" name="cmd" value="_xclick">
+                <input type="hidden" name="business" value="atika.76@windowslive.com">
+                <input type="hidden" name="item_name" value="50 retus kredit">
+                <input type="hidden" name="amount" value="4990">
+                <input type="hidden" name="currency_code" value="HUF">
+                <input type="hidden" name="return" value="">
+                <input type="hidden" name="cancel_return" value="">
+                <input type="submit" class="btn" value="50 retus — 4990 Ft">
+              </form>
+
+              <form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post" style="display:inline-block;margin-right:8px">
+                <input type="hidden" name="cmd" value="_xclick">
+                <input type="hidden" name="business" value="atika.76@windowslive.com">
+                <input type="hidden" name="item_name" value="100 retus kredit">
+                <input type="hidden" name="amount" value="7990">
+                <input type="hidden" name="currency_code" value="HUF">
+                <input type="hidden" name="return" value="">
+                <input type="hidden" name="cancel_return" value="">
+                <input type="submit" class="btn" value="100 retus — 7990 Ft">
+              </form>
+            </div>
+
+            <h3 style="margin-top:12px">Havi előfizetések (PayPal Subscription)</h3>
+            <p class="small">Előfizetési gombok — a valós használathoz állítsd be PayPal fiókodban a webhook/IPN visszahívásokat.</p>
+          </div>
+
+          <aside class="card">
+            <h3>Gyors magyarázat</h3>
+            <p class="small">A visszatérő URL-ek dinamikusan lesznek beállítva, ezért nem kell manuálisan szerkesztened a formokat. Éles környezetben implementálj IPN/Webhook hitelesítést.</p>
+          </aside>
+        </div>
+      </div>
+
+      <div id="admin" class="view hidden">
+        <div class="card admin-area">
+          <h2>Admin felület</h2>
+          <p class="small">Demo belépés: <strong>jelszó: aiadmin123</strong> — változtasd meg a beépített kódban, vagy jobb: tedd át szerveroldali auth-ba.</p>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p class="small">Készítette: AI Beauty Fix demo — Attila. PayPal business: atika.76@windowslive.com</p>
+    </footer>
+  </div>
+
+  <script>
+    // Egyszerű view router
+    function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
+    showView('home');
+  </script>
+</body>
+</html>
