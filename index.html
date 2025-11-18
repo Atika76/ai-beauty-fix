@@ -1,303 +1,148 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="hu">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>🔥 AI Beauty Fix — Fotóretusálás</title>
-  <meta name="description" content="Gyors AI fotó-retusálás — ingyenes 3 kép/nap vízjellel, kreditcsomagok és előfizetések.">
-  <style>
-    :root{
-      --accent:#7c3aed;
-      --bg1:#071022;
-      --bg2:#08142a;
-      --card:rgba(255,255,255,0.04);
-      --muted:#9fb0c7;
-      --glass:rgba(255,255,255,0.03);
-      --radius:14px;
-      font-synthesis: none;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:#eaf4ff;min-height:100vh}
-    .wrap{max-width:1100px;margin:28px auto;padding:20px}
-    header{display:flex;align-items:center;gap:16px}
-    .logo{display:flex;align-items:center;gap:12px}
-    .logo img{width:64px;height:64px;object-fit:contain;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));padding:8px}
-    h1{margin:0;font-size:20px}
-    p.lead{margin:0;color:var(--muted);font-size:13px}
-    nav{margin-left:auto}
-    nav a{color:var(--muted);text-decoration:none;margin-left:14px;font-weight:600}
-    .hero{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:20px}
-    .card{background:var(--card);padding:18px;border-radius:var(--radius);box-shadow:0 8px 30px rgba(2,6,23,0.6)}
-    .muted{color:var(--muted);font-size:13px}
-    .btn{display:inline-block;padding:10px 14px;border-radius:10px;background:var(--accent);color:white;text-decoration:none;font-weight:700;cursor:pointer;border:none}
-    .mutebtn{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);padding:8px 12px;border-radius:10px}
-    label{display:block;margin-top:12px;font-weight:700}
-    input[type=file]{display:block;margin-top:8px}
-    #preview,#resultImg{max-width:100%;border-radius:10px;display:block;margin-top:12px}
-    select,input,button{font-family:inherit}
-    .watermark{position:absolute;left:12px;bottom:12px;padding:6px 10px;background:rgba(0,0,0,0.35);border-radius:8px;font-weight:700;color:rgba(255,255,255,0.9)}
-    footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
-    /* responsive */
-    @media (max-width:900px){
-      .hero{grid-template-columns:1fr}
-      nav{display:none}
-      .logo img{width:56px;height:56px}
-    }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <header>
-      <div class="logo">
-        <img src="logo.png" alt="AI Beauty Fix logo" id="siteLogo" onerror="this.style.display='none'">
-        <div>
-          <h1>🔥 AI Beauty Fix</h1>
-          <p class="lead">Gyors AI fotó-retusálás — próbáld ki ingyen, 3 kép/nap (vízjellel).</p>
-        </div>
-      </div>
-      <nav>
-        <a href="#upload" onclick="showView('upload')">Feltöltés</a>
-        <a href="#pricing" onclick="showView('pricing')">Árak</a>
-        <a href="#admin" onclick="showView('admin')">Admin</a>
-      </nav>
-    </header>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Beauty Fix</title>
 
-    <main class="hero">
-      <section class="card">
-        <h2>Gyors kezdés</h2>
-        <p class="muted">Tölts fel egy képet, válassz opciót: ingyenes (vízjel) vagy kredit / előfizetés. 1 retus = 1 kredit.</p>
+    <!-- Favicon (telefonon se a földgömb legyen) -->
+    <link rel="icon" type="image/png" href="logo.png">
 
-        <div style="margin-top:12px">
-          <strong>Kreditek: </strong><span id="creditDisplay">0</span>
-        </div>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
 
-        <hr style="margin:14px 0;border:none;border-top:1px solid rgba(255,255,255,0.04)">
-
-        <div id="upload" class="section">
-          <label for="fileInput">Válassz fotót (JPG/PNG, max 20MB)</label>
-          <input id="fileInput" type="file" accept="image/*">
-          <canvas id="canvas" style="display:none"></canvas>
-          <img id="preview" src="#" alt="preview" style="display:none">
-          <label>Opció</label>
-          <select id="optionSelect">
-            <option value="free">Ingyenes retus (vízjel) — limit 3/nap</option>
-            <option value="credit">Használj kreditet (vízjel nélküli)</option>
-            <option value="paynow">Vásárlás / egyedi fizetés</option>
-          </select>
-          <div style="margin-top:12px">
-            <button class="btn" id="processBtn">Retusálás indítása</button>
-            <button class="mutebtn" onclick="showView('pricing')" style="margin-left:8px">Kreditek / előfizetés</button>
-            <span id="status" class="muted" style="margin-left:12px"></span>
-          </div>
-
-          <div id="resultWrap" style="margin-top:16px;display:none;position:relative">
-            <h3>Eredmény</h3>
-            <img id="resultImg" src="#" alt="result">
-            <div id="wmTag" class="watermark" style="display:none">AI Beauty Fix — DEMO (VÍZJEL)</div>
-            <div style="margin-top:10px">
-              <a id="downloadBtn" class="btn" download>Letöltés</a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <aside class="card">
-        <h3>Árak & Csomagok</h3>
-        <p class="muted">1 retus = 1 kredit. Válaszd a neked megfelelőt — a PayPal gombok a fizetéshez visznek.</p>
-
-        <div style="margin-top:12px" id="pricing">
-          <!-- PayPal forms (return URLs are set by JS) -->
-          <form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post" style="margin-bottom:8px">
-            <input type="hidden" name="cmd" value="_xclick">
-            <input type="hidden" name="business" value="atika.76@windowslive.com">
-            <input type="hidden" name="item_name" value="10 retus kredit">
-            <input type="hidden" name="amount" value="1490">
-            <input type="hidden" name="currency_code" value="HUF">
-            <input type="hidden" name="return" value="">
-            <input type="hidden" name="cancel_return" value="">
-            <input type="submit" class="btn" value="10 retus — 1490 Ft">
-          </form>
-
-          <form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post" style="margin-bottom:8px">
-            <input type="hidden" name="cmd" value="_xclick">
-            <input type="hidden" name="business" value="atika.76@windowslive.com">
-            <input type="hidden" name="item_name" value="20 retus kredit">
-            <input type="hidden" name="amount" value="2490">
-            <input type="hidden" name="currency_code" value="HUF">
-            <input type="hidden" name="return" value="">
-            <input type="hidden" name="cancel_return" value="">
-            <input type="submit" class="btn" value="20 retus — 2490 Ft">
-          </form>
-
-          <form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post" style="margin-bottom:8px">
-            <input type="hidden" name="cmd" value="_xclick">
-            <input type="hidden" name="business" value="atika.76@windowslive.com">
-            <input type="hidden" name="item_name" value="50 retus kredit">
-            <input type="hidden" name="amount" value="4990">
-            <input type="hidden" name="currency_code" value="HUF">
-            <input type="hidden" name="return" value="">
-            <input type="hidden" name="cancel_return" value="">
-            <input type="submit" class="btn" value="50 retus — 4990 Ft">
-          </form>
-
-          <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.04)">
-
-          <h4>Havi előfizetések</h4>
-          <form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post" style="margin-bottom:8px">
-            <input type="hidden" name="cmd" value="_xclick-subscriptions">
-            <input type="hidden" name="business" value="atika.76@windowslive.com">
-            <input type="hidden" name="item_name" value="AI Beauty Fix - Alap (50 retus/hó)">
-            <input type="hidden" name="a3" value="2490">
-            <input type="hidden" name="p3" value="1">
-            <input type="hidden" name="t3" value="M">
-            <input type="hidden" name="currency_code" value="HUF">
-            <input type="hidden" name="return" value="">
-            <input type="submit" class="btn" value="Alap — 2490 Ft / hó">
-          </form>
-
-          <form target="paypal" action="https://www.paypal.com/cgi-bin/webscr" method="post">
-            <input type="hidden" name="cmd" value="_xclick-subscriptions">
-            <input type="hidden" name="business" value="atika.76@windowslive.com">
-            <input type="hidden" name="item_name" value="AI Beauty Fix - Premium (150 retus/hó)">
-            <input type="hidden" name="a3" value="4990">
-            <input type="hidden" name="p3" value="1">
-            <input type="hidden" name="t3" value="M">
-            <input type="hidden" name="currency_code" value="HUF">
-            <input type="hidden" name="return" value="">
-            <input type="submit" class="btn" value="Prémium — 4990 Ft / hó">
-          </form>
-
-        </div>
-
-        <hr style="margin:12px 0;border:none;border-top:1px solid rgba(255,255,255,0.04)">
-        <p class="muted">Admin demo belépés a felső menüből. Éles használathoz szükséges: PayPal webhooks/IPN és szerver-oldali hitelesítés.</p>
-      </aside>
-    </main>
-
-    <div id="admin" class="card" style="margin-top:18px;display:none">
-      <h3>Admin</h3>
-      <p class="muted">Demo admin funkciók a kliens oldalon — élesített szerver-oldali auth kell</p>
-    </div>
-
-    <footer>
-      <p class="muted">© AI Beauty Fix • PayPal: atika.76@windowslive.com</p>
-    </footer>
-  </div>
-
-  <script>
-    // router
-    function showView(id){
-      document.querySelectorAll('.section').forEach(s=>s.style.display='none');
-      if(id==='upload') document.querySelector('#upload').style.display='block';
-      if(id==='pricing') document.querySelector('#pricing').style.display='block';
-      if(id==='admin'){document.getElementById('admin').style.display='block'}
-      window.location.hash='#'+id;
-    }
-    // init
-    showView('upload');
-
-    // credits (localStorage)
-    function getCredits(){return Number(localStorage.getItem('aib_credits')||0)}
-    function setCredits(n){localStorage.setItem('aib_credits',String(n));document.getElementById('creditDisplay').innerText=n}
-    setCredits(getCredits());
-
-    // free usage tracking (3/day)
-    function freeCountToday(){const k='aib_free_'+(new Date()).toISOString().slice(0,10);return Number(localStorage.getItem(k)||0)}
-    function incFreeCount(){const k='aib_free_'+(new Date()).toISOString().slice(0,10);localStorage.setItem(k,String(freeCountToday()+1))}
-
-    // file handling & preview
-    const fileInput=document.getElementById('fileInput');
-    const preview=document.getElementById('preview');
-    const canvas=document.getElementById('canvas');
-    const ctx=canvas.getContext('2d');
-    let currentImage=null;
-    fileInput.addEventListener('change',e=>{
-      const f=e.target.files[0];
-      if(!f) return;
-      if(f.size>20*1024*1024){alert('A fájl túl nagy (max 20MB)');return}
-      const url=URL.createObjectURL(f);
-      preview.src=url; preview.style.display='block'; currentImage=f;
-    });
-
-    document.getElementById('processBtn').addEventListener('click',()=>{
-      if(!currentImage){alert('Válassz egy képet!');return}
-      const opt=document.getElementById('optionSelect').value;
-      if(opt==='free'){
-        if(freeCountToday()>=3){alert('Elérted a napi ingyenes limitet (3). Vásárolj kreditet vagy előfizetést.'); return }
-        incFreeCount(); simulateRetouch(true);
-      } else if(opt==='credit'){
-        if(getCredits()<=0){ if(confirm('Nincsen elég kredited. Vásárolsz most?')) showView('pricing'); return }
-        setCredits(getCredits()-1); simulateRetouch(false);
-      } else {
-        showView('pricing'); alert('Válassz egy kreditcsomagot a fizetéshez.');
-      }
-    });
-
-    function simulateRetouch(watermarked){
-      const img=new Image();
-      img.onload=()=>{
-        canvas.width=img.width; canvas.height=img.height; ctx.clearRect(0,0,canvas.width,canvas.height);
-        // basic enhancement simulation
-        ctx.drawImage(img,0,0);
-        try{ ctx.filter='contrast(1.06) saturate(1.05)'; ctx.drawImage(canvas,0,0); }catch(e){}
-        // soft blur via scale trick
-        const tmp=document.createElement('canvas');
-        tmp.width=Math.max(1,Math.floor(img.width*0.5)); tmp.height=Math.max(1,Math.floor(img.height*0.5));
-        const tctx=tmp.getContext('2d'); tctx.drawImage(canvas,0,0,tmp.width,tmp.height); ctx.drawImage(tmp,0,0,img.width,img.height);
-        // warming overlay
-        ctx.globalCompositeOperation='soft-light'; ctx.fillStyle='rgba(255,240,220,0.02)'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.globalCompositeOperation='source-over';
-        const dataUrl=canvas.toDataURL('image/jpeg',0.92);
-        document.getElementById('resultImg').src=dataUrl;
-        document.getElementById('resultWrap').style.display='block';
-        document.getElementById('downloadBtn').href=dataUrl;
-        if(watermarked){ document.getElementById('wmTag').style.display='block'; applyWatermarkToCanvas(); } else { document.getElementById('wmTag').style.display='none'; }
-      };
-      img.src=URL.createObjectURL(currentImage);
-    }
-
-    function applyWatermarkToCanvas(){
-      ctx.font='36px system-ui'; ctx.fillStyle='rgba(255,255,255,0.12)'; ctx.textAlign='left';
-      const txt='AI Beauty Fix';
-      ctx.fillText(txt,20,canvas.height-40);
-      const data=canvas.toDataURL('image/jpeg',0.92);
-      document.getElementById('resultImg').src=data;
-      document.getElementById('downloadBtn').href=data;
-    }
-
-    // PayPal return handling (demo): adds credits after redirect
-    (function handleReturn(){
-      const qp=new URLSearchParams(location.search);
-      if(qp.get('paid')==='1'){
-        const pack=qp.get('pack'); let add=0; if(pack==='10') add=10; if(pack==='20') add=20; if(pack==='50') add=50; if(pack==='100') add=100;
-        if(add>0){ setCredits(getCredits()+add); alert('Köszönjük! A kifizetés feldolgozva (demo). '+add+' kreditet jóváírtunk.'); }
-      }
-      if(qp.get('sub')){ const s=qp.get('sub'); if(s==='basic'){ setCredits(50); alert('Előfizetés aktiválva (demo): 50 kredit/hó'); } if(s==='premium'){ setCredits(150); alert('Előfizetés aktiválva (demo): 150 kredit/hó'); } if(s==='pro'){ setCredits(9999); alert('Pro előfizetés: korlátlan (demo)'); } }
-    })();
-
-    // auto-set PayPal return URLs so forms work on GitHub Pages without manual edit
-    document.addEventListener('DOMContentLoaded', function(){
-      const origin = window.location.origin;
-      const path = window.location.pathname.replace(/\/index\.html$/, '/');
-      const base = origin + path;
-      const forms=document.querySelectorAll('form[action*="paypal.com"]');
-      forms.forEach(form=>{
-        const item=form.querySelector('input[name=item_name]');
-        let pack=''; if(item){
-          const name=item.value.toLowerCase();
-          if(name.includes('10')) pack='?paid=1&pack=10';
-          if(name.includes('20')) pack='?paid=1&pack=20';
-          if(name.includes('50')) pack='?paid=1&pack=50';
-          if(name.includes('100')) pack='?paid=1&pack=100';
-          if(name.includes('alap')) pack='?sub=basic';
-          if(name.includes('premium')) pack='?sub=premium';
-          if(name.includes('pro')) pack='?sub=pro';
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #111;
+            font-family: 'Poppins', sans-serif;
+            color: #fff;
+            text-align: center;
         }
-        const ret=form.querySelector('input[name=return]');
-        const cancel=form.querySelector('input[name=cancel_return]');
-        if(ret) ret.value = base + (pack||'');
-        if(cancel) cancel.value = base + '?cancel=1';
-      });
-    });
-  </script>
+
+        header {
+            padding: 20px 0;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+        }
+
+        header img {
+            height: 70px;
+        }
+
+        h1 {
+            margin-top: 20px;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .box {
+            background: rgba(255,255,255,0.08);
+            padding: 25px;
+            margin: 20px auto;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 480px;
+        }
+
+        .box input, .box textarea {
+            width: 90%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 8px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        button {
+            background: #ff4081;
+            border: none;
+            padding: 14px 30px;
+            color: #fff;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #ff1a66;
+        }
+
+        #output {
+            margin-top: 25px;
+        }
+
+        #output img {
+            width: 90%;
+            max-width: 350px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .watermark {
+            position: relative;
+            display: inline-block;
+        }
+
+        .watermark::after {
+            content: "AI Beauty Fix – DEMO";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-20deg);
+            font-size: 22px;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 700;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <img src="logo.png" alt="AI Beauty Fix">
+</header>
+
+<h1>AI Beauty Fix – Képszépítés</h1>
+
+<div class="box">
+    <p>Tölts fel egy képet és a rendszer egy látványosabb verziót készít belőle (DEMO mód).</p>
+
+    <input type="file" id="imageUpload" accept="image/*">
+
+    <button onclick="processImage()">AI Szépítés</button>
+
+    <div id="output"></div>
+</div>
+
+<script>
+function processImage() {
+    const file = document.getElementById("imageUpload").files[0];
+    const output = document.getElementById("output");
+
+    if (!file) {
+        output.innerHTML = "<p>Kérlek tölts fel egy képet.</p>";
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        output.innerHTML = `
+            <h3>Eredmény (DEMO)</h3>
+            <div class="watermark">
+                <img src="${e.target.result}">
+            </div>
+            <p>Ez a DEMO verzió vízjellel működik.<br>Később fizetős opciókkal eltávolítható.</p>
+        `;
+    };
+    reader.readAsDataURL(file);
+}
+</script>
+
 </body>
 </html>
